@@ -396,6 +396,10 @@ class FileDelivery
                     fclose($handle);
                     break;
 
+                case 'x-accel-redirect':
+                    header('X-Accel-Redirect: '. $this->extensionConfiguration['protectedPath'] . $this->file);
+                    break;
+                    
                 case 'readfile':
                     //fallthrough, this is the default case
                 default:
