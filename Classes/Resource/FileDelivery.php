@@ -397,8 +397,7 @@ class FileDelivery
                     break;
 
                 case 'x-accel-redirect':
-                    die($this->extensionConfiguration['protectedPath'] . '/' . $this->file);
-                    //header('X-Accel-Redirect: '. $this->extensionConfiguration['protectedPath'] . $this->file);
+                    header('X-Accel-Redirect: '. $this->extensionConfiguration['protectedPath'] . '/' . $this->file);
                     break;
                     
                 case 'readfile':
