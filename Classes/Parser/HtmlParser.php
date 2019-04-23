@@ -24,6 +24,8 @@ namespace Bitmotion\SecureDownloads\Parser;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
+use TYPO3\CMS\Core\Site\Entity\Site;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
@@ -195,22 +197,29 @@ class HtmlParser
      * @param string $tag
      *
      * @return string
+     * @throws \TYPO3\CMS\Core\Exception\SiteNotFoundException
      */
     protected function parseTag(string $tag): string
     {
+        $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
+
+        /** @var Site $site */
+        $site = $siteFinder->getSiteByPageId($GLOBALS['TSFE']->id);
+        $path = $site->getBase()->getPath();
+
         if (preg_match($this->tagPattern, $tag, $matchedUrls)) {
             $resourceUri = $matchedUrls[1];
 
             // Handle absRefPrefix
-            $containsAbsRefPrefix = GeneralUtility::isFirstPartOfStr($matchedUrls[1], $GLOBALS['TSFE']->absRefPrefix);
+            $containsAbsRefPrefix = GeneralUtility::isFirstPartOfStr($matchedUrls[1], $path);
             if ($containsAbsRefPrefix) {
-                $resourceUri = substr($resourceUri, strlen($GLOBALS['TSFE']->absRefPrefix));
+                $resourceUri = substr($resourceUri, strlen($path));
             }
 
             $replace = $this->delegate->publishResourceUri($resourceUri);
 
             if ($containsAbsRefPrefix) {
-                $replace = $GLOBALS['TSFE']->absRefPrefix . $replace;
+                $replace = $path . $replace;
             }
 
             $tagParts = explode($matchedUrls[1], $tag, 2);
