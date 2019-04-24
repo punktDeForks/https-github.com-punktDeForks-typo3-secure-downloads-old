@@ -35,6 +35,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 use TYPO3\CMS\Frontend\Page\PageRepository;
 
 /**
@@ -104,8 +105,11 @@ class LogController extends ActionController
      */
     public function listAction(Filter $filter = null)
     {
-        $logEntries = $this->logRepository->findByFilter($filter);
+        if (!isset($filter)) {
+            $filter = $this->generateDefaultFilter();
+        }
 
+        $logEntries = $this->logRepository->findByFilter($filter);
         $this->view->assignMultiple([
             'logs' => $logEntries,
             'users' => $this->getUsers(),
@@ -159,6 +163,10 @@ class LogController extends ActionController
      */
     public function showAction(Filter $filter = null)
     {
+        if (!isset($filter)) {
+            $filter = $this->generateDefaultFilter();
+        }
+
         $pageId = (int)GeneralUtility::_GP('id');
 
         if ($pageId == 0) {
@@ -239,6 +247,18 @@ class LogController extends ActionController
         $uriBuilder->setRequest($this->request);
 
         return $uriBuilder;
+    }
+
+    protected function generateDefaultFilter(): Filter
+    {
+        $from = new \DateTime('-1 month');
+        $until = new \DateTime();
+
+        $filter = new Filter();
+        $filter->setFrom($from->format('Y-m-d H:i:s'));
+        $filter->setTill($until->format('Y-m-d H:i:s'));
+
+        return $filter;
     }
 
 }
